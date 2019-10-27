@@ -1,0 +1,26 @@
+==========
+WARSTEK.COM
+===========
+Starting	: https://warstek.com/category/sains-alam/page/n/ (n=1,2,3 ...)
+GetLink 	: document.querySelectorAll("#content article .entry-content.clearfix .ecae .ecae-button a")
+Title		: document.querySelector(".entry-header h1").textContent
+Date		: document.querySelector(".posted-on a .entry-date.published").textContent
+Category	: document.querySelector(".cat-links a").textContent
+Content		: document.querySelector(".entry-content.clearfix")
+
+=================
+INFOASTRONOMY.ORG
+=================
+Starting	: https://www.infoastronomy.org/
+GetLink 1	: document.querySelectorAll("#newarlinalabel2-wrapper div div div .newarlina_right ul li span a")
+Title 1		: document.querySelector(".post.hentry .posting-wrapper h1 a").textContent
+Date 1		: document.querySelector(".timestamp-link .published.updated").textContent
+Category 1	: - (Astronomy - Hardcode)
+Content	1	: document.querySelector(".post-body.entry-content .widget-middle")
+
+GetLink 2	: document.querySelectorAll(".post.hentry .posting-wrapper h2 a")
+Title 2		: document.querySelector(".post.hentry .posting-wrapper h1 a").textContent
+Date 2		: document.querySelector(".timestamp-link .published.updated").textContent
+Category 2	: - (Astronomy - Hardcode)
+Content 2	: document.querySelector(".post-body.entry-content .widget-middle")
+
