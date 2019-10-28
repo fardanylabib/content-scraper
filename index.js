@@ -1,5 +1,6 @@
 
 const scraper = require("./scraper");
+const htmlCleaner = require("./htmlcleaner");
 const fs = require("fs");
 
 const createOutput = (content) =>{
@@ -38,19 +39,34 @@ const createOutput = (content) =>{
     );
     writer.write(content);
     writer.write(
-        `</body>
-        </html>`
+        `</body></html>`
     );
     writer.end();
 }
 
+const removeFooterText = (html) =>{
+    let index = 0;
+    const FOOTER_BEGINNING = `<a href="#abh_about">`;
+    index = html.indexOf(FOOTER_BEGINNING);
+    return html.substring(0,index);
+}
+
+const removeUnwantedText = (html) => {
+    //remove baca juga
+    let local = '';
+    local.indexOf()
+}
+
 const run = async () => {
-    const result = await scraper.runScraper();
-    if(result){
-        for(let item of result){
-            createOutput(item);
-        }
-    }
+    // const result = await scraper.runScraper();
+    // if(result){
+    //     for(let item of result){
+    //         createOutput(item);
+    //     }
+    // }
+    let cleanHtml = htmlCleaner.sanitize();
+    cleanHtml = removeFooterText(cleanHtml);
+    createOutput(cleanHtml);
 }
 
 run();

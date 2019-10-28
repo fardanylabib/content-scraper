@@ -1,5 +1,5 @@
 const puppeteer = require('puppeteer');
-const MAX_PAGE = 3;
+const MAX_PAGE = 1;
 const LINK_PAGES = 'https://warstek.com/category/sains-alam/page'
 
 let browser = null;
