@@ -1,73 +1,16 @@
-
+/**
+ * Steps:
+ * 1. Init puppeteer
+ * 2. Init FileIO
+ * 3. Init scrap link, scrap content, write
+ */
 const scraper = require("./scraper");
-const htmlCleaner = require("./htmlcleaner");
-const fs = require("fs");
+const config = require('./resource/config');
 
-const createOutput = (content) =>{
-    const linksDir 	= ".\\data\\";
-	
-	//output path setup
-	let fileExist = -1;
-	let index = 0;
-	let fileName = "";
-	while(fileExist != 0){
-		if(index === 0){
-			fileName = linksDir+"linkList.html";
-		}else{
-			fileName = linksDir+"linkList("+ index +").html";
-		}
-		if(fs.existsSync(fileName)){
-			index++;
-		}else{
-			fileExist = 0;
-		}
-	}
-    console.log("File Name = "+fileName);
-    const writer = fs.createWriteStream(fileName);
-    writer.write(
-        `<!DOCTYPE html>
-        <html>
-            <head>
-                <meta name = "viewport" content="width=device-width, initial-scale=1">
-                <style type="text/css">
-                    body{
-                        font-family: Verdana, sans-serif;
-                    }
-                </style>
-            </head>
-            <body>`
-    );
-    writer.write(content);
-    writer.write(
-        `</body></html>`
-    );
-    writer.end();
+const run = async (settings,website) => {
+    console.log('SETTINGS = '+JSON.stringify(settings));
+    await scraper.initScraper(settings, website);
+    await scraper.runScraperPageIncrement(1);
 }
 
-const removeFooterText = (html) =>{
-    let index = 0;
-    const FOOTER_BEGINNING = `<a href="#abh_about">`;
-    index = html.indexOf(FOOTER_BEGINNING);
-    return html.substring(0,index);
-}
-
-const removeUnwantedText = (html) => {
-    //remove baca juga
-    let local = '';
-    local.indexOf()
-}
-
-const run = async () => {
-    // const result = await scraper.runScraper();
-    // if(result){
-    //     for(let item of result){
-    //         createOutput(item);
-    //     }
-    // }
-    let cleanHtml = htmlCleaner.sanitize();
-    cleanHtml = removeFooterText(cleanHtml);
-    createOutput(cleanHtml);
-}
-
-run();
-
+run(config.settings, config.websites.warstek);

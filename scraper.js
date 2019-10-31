@@ -1,26 +1,38 @@
 const puppeteer = require('puppeteer');
-const MAX_PAGE = 1;
-const LINK_PAGES = 'https://warstek.com/category/sains-alam/page'
-
+const htmlCleaner = require('./htmlcleaner');
+const fileIO = require('./fileIO');
 let browser = null;
 let page = null;
+let website = null;
+let config = null;
+let initiated = false;
 
-const initPuppeteer = async () => {
+exports.initScraper = async (settings,webTarget) => {
     try{
-        browser = await puppeteer.launch({ headless: false, executablePath : 'C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe' });
+        if(settings.isUsingChrome == true){
+            browser = await puppeteer.launch({ headless: false, executablePath : settings.chromePath});
+        }else{
+            browser = await puppeteer.launch();
+        }
         page = await browser.newPage();
+        website = webTarget;
+        config = settings;
+        initiated = true;
         return 1;
     }catch(err){
         throw new Error('Error puppeteer initialization: '+ err.message);
     }
 }
 
-const scrapeLinks = async (pagenum) => {
+const scrapeLinks = async (settings,webTarget, pageNum) => {
     try{
-        await page.goto(`${LINK_PAGES}/${pagenum}/`,{ timeout: 0 , waitUntil : 'domcontentloaded'});
-        const result = await page.evaluate(() => {
+        if(initiated == false){
+            throw new Error('Scraper need to be initiated first');
+        }
+        await page.goto(webTarget.url + pageNum, settings.puppeter.pageProps);
+        const result = await page.evaluate((webTarget) => {
             let links = [];
-            const elements = document.querySelectorAll("#content article .entry-content.clearfix .ecae .ecae-button a");
+            const elements = document.querySelectorAll(webTarget.selectors.links);
             if(elements && elements.length > 0){
                 for(const element of elements){
                     links.push(element.href);
@@ -28,47 +40,70 @@ const scrapeLinks = async (pagenum) => {
                 return links; 
             }
             return null;
-        });
+        }, webTarget);
         return result;
     }catch(err){
         throw new Error('Error scraping Links: '+ err.message);
     }
 }
 
-const scrapeContent = async (link) => {
+const scrapeContent = async (settings,webTarget, link) => {
     try{
-        await page.goto(link,{ timeout: 0 , waitUntil : 'domcontentloaded'});
-        const result = await page.evaluate(() => {
-            const content = document.querySelector(".entry-content.clearfix").innerHTML;
-            if(content){
-                return content; 
+        if(initiated == false){
+            throw new Error('Scraper need to be initiated first');
+        }
+        await page.goto(link,settings.puppeter.pageProps);
+        const result = await page.evaluate((webTarget) => {
+            const getTitle = document.querySelector(webTarget.selectors.title).textContent;
+            const getDate = document.querySelector(webTarget.selectors.date).textContent;
+            const getContent = document.querySelector(webTarget.selectors.content).innerHTML;
+            if(getContent){
+                if(getTitle === undefined || getTitle === null){
+                    title = website.defaultTitle;
+                }
+                if(getDate === undefined || getDate === null){
+                    date = new Date();
+                }
+                return { title: getTitle, date: getDate, content: getContent };
             }
             return null;
-        });
-        return result;  
+        }, webTarget);
+        if(result){
+            return result;
+        }
+        return null;
     }catch(err){
         throw new Error('Error scraping Content: '+ err.message);
     }
 }
 
-exports.runScraper = async () => {
-    let articles = [];
-    await initPuppeteer();
-    for(let page = 1 ; page<= MAX_PAGE ; page++){
-        const result = await scrapeLinks(page);
+
+//for warstek
+exports.runScraperPageIncrement = async (pageStart) => {
+    if(initiated == false){
+        throw new Error('Scraper need to be initiated first');
+    }
+    fileIO.init(website);
+    const maxPage = website.maxPage;
+    //url,selector,pageProps
+    for(let page = pageStart ; page<= maxPage ; page++){
+        console.log('Scraping page '+ page);
+        const result = await scrapeLinks(config, website, page);
         if(result === null){
             console.log('skip page '+page);
             continue;
         }
         for(let link of result){
-            const article = await scrapeContent(link);
+            const article = await scrapeContent( config, website, link);
             if(article === null){
                 console.log('skip link '+ link);
                 continue;
             }
-            articles.push(article);
+            const articleContent = htmlCleaner.sanitize(article.content,website.allowedTags);
+            const fullArticle = '<title>' + article.title + '</title>' + '<date>' + article.date + '</date>' + articleContent;
+            fileIO.write(fullArticle,true,true);
         }
     }
     await browser.close();
-  	return articles;
+  	return 1;
 }
