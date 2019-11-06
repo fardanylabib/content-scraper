@@ -9,9 +9,11 @@ let initiated = false;
 
 exports.initScraper = async (settings,webTarget) => {
     try{
-        if(settings.isUsingChrome == true){
-            browser = await puppeteer.launch({ headless: false, executablePath : settings.chromePath});
+        if(settings.puppeter.isUsingChrome === true){
+            /*eslint-disable*/
+            browser = await puppeteer.launch(settings.puppeter.props);
         }else{
+            /*eslint-disable*/
             browser = await puppeteer.launch();
         }
         page = await browser.newPage();
@@ -26,10 +28,11 @@ exports.initScraper = async (settings,webTarget) => {
 
 const scrapeLinks = async (settings,webTarget, pageNum) => {
     try{
-        if(initiated == false){
+        if(initiated === false){
             throw new Error('Scraper need to be initiated first');
         }
         await page.goto(webTarget.url + pageNum, settings.puppeter.pageProps);
+        /*eslint-disable*/
         const result = await page.evaluate((webTarget) => {
             let links = [];
             const elements = document.querySelectorAll(webTarget.selectors.links);
@@ -49,10 +52,11 @@ const scrapeLinks = async (settings,webTarget, pageNum) => {
 
 const scrapeContent = async (settings,webTarget, link) => {
     try{
-        if(initiated == false){
+        if(initiated === false){
             throw new Error('Scraper need to be initiated first');
         }
         await page.goto(link,settings.puppeter.pageProps);
+        /*eslint-disable*/
         const result = await page.evaluate((webTarget) => {
             const getTitle = document.querySelector(webTarget.selectors.title).textContent;
             const getDate = document.querySelector(webTarget.selectors.date).textContent;
@@ -80,20 +84,23 @@ const scrapeContent = async (settings,webTarget, link) => {
 
 //for warstek
 exports.runScraperPageIncrement = async (pageStart) => {
-    if(initiated == false){
+    if(initiated === false){
         throw new Error('Scraper need to be initiated first');
     }
+    console.log('run scraper');
     fileIO.init(website);
     const maxPage = website.maxPage;
     //url,selector,pageProps
     for(let page = pageStart ; page<= maxPage ; page++){
         console.log('Scraping page '+ page);
+        /*eslint-disable*/
         const result = await scrapeLinks(config, website, page);
         if(result === null){
             console.log('skip page '+page);
             continue;
         }
         for(let link of result){
+            /*eslint-disable*/
             const article = await scrapeContent( config, website, link);
             if(article === null){
                 console.log('skip link '+ link);

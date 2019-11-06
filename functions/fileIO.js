@@ -19,18 +19,17 @@ exports.init = (website) => {
     documentProps.unwanted = website.unwantedTexts;
     documentProps.footerSign = website.footerSign;
     initiated = true;
-
 }
 
 exports.write = (html,isRemoveFooter,isRemoveUnwanted) => {
-    if(initiated == false){
+    if(initiated === false){
         throw new Error('FileIO need to be initiated first');
     }
 	//output path setup
 	let fileExist = -1;
 	let index = 1;
 	let filePath = "";
-	while(fileExist != 0){
+	while(fileExist !== 0){
 		filePath = `${directory}/${fileName}_${index}.html`;
 		if(fs.existsSync(filePath)){
 			index++;
@@ -41,12 +40,17 @@ exports.write = (html,isRemoveFooter,isRemoveUnwanted) => {
     const writer = fs.createWriteStream(filePath);
     let htmlText = html;
     if(isRemoveFooter){
-        console.log('remove footer');
         index = htmlText.indexOf(documentProps.footerSign);
-        htmlText = htmlText.substring(0,index);
+        const indexParagraph = htmlText.indexOf('<p>');
+        if(index < indexParagraph){
+            //in case of footer written on the top of paragraph and below the title
+            const noFooterHtml = htmlText.substring(0, index);
+            htmlText = noFooterHtml + htmlText.substring(indexParagraph);
+        }else{
+            htmlText = htmlText.substring(0,index);
+        }
     }
     if(isRemoveUnwanted){
-        console.log('remove unwanted');
         for(const unwanted of documentProps.unwanted){
             let local = '';
             let cropIndex = htmlText.indexOf(unwanted);

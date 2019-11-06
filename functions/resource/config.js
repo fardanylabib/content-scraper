@@ -52,9 +52,9 @@ exports.websites =  {
 }
 
 exports.settings = {
-    isUsingChrome : true,
-    chromePath : 'C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe',
     puppeter: {
+        isUsingChrome : false,
+        props : { headless: true, executablePath : 'C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe'},
         pageProps: { timeout: 0 , waitUntil : 'domcontentloaded'}
     }
 }
